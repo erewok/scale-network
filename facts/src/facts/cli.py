@@ -85,8 +85,19 @@ def cli(
     ctx.ensure_object(dict)
 
     # If any custom paths provided, use custom logic; otherwise use bundled defaults
-    if data_dir or any([swconfig_dir, vlans_file, switches_file, servers_file,
-                        routers_file, aps_file, apuse_file, pis_file, piuse_file]):
+    if data_dir or any(
+        [
+            swconfig_dir,
+            vlans_file,
+            switches_file,
+            servers_file,
+            routers_file,
+            aps_file,
+            apuse_file,
+            pis_file,
+            piuse_file,
+        ]
+    ):
         # Custom data sources - apply defaults based on data_dir if provided
         if data_dir:
             swconfig_dir = swconfig_dir or os.path.join(data_dir, "switch-configuration", "config")
@@ -94,8 +105,12 @@ def cli(
         ctx.obj["swconfigdir"] = swconfig_dir + "/" if swconfig_dir else ""
         ctx.obj["vlansfile"] = vlans_file or "vlans"
         ctx.obj["switchesfile"] = switches_file or (os.path.join(swconfig_dir, "switchtypes") if swconfig_dir else "")
-        ctx.obj["serversfile"] = servers_file or (os.path.join(data_dir, "facts", "servers", "serverlist.csv") if data_dir else "")
-        ctx.obj["routersfile"] = routers_file or (os.path.join(data_dir, "facts", "routers", "routerlist.csv") if data_dir else "")
+        ctx.obj["serversfile"] = servers_file or (
+            os.path.join(data_dir, "facts", "servers", "serverlist.csv") if data_dir else ""
+        )
+        ctx.obj["routersfile"] = routers_file or (
+            os.path.join(data_dir, "facts", "routers", "routerlist.csv") if data_dir else ""
+        )
         ctx.obj["apsfile"] = aps_file or (os.path.join(data_dir, "facts", "aps", "aps.csv") if data_dir else "")
         ctx.obj["apusefile"] = apuse_file or (os.path.join(data_dir, "facts", "aps", "apuse.csv") if data_dir else "")
         ctx.obj["pifile"] = pis_file or (os.path.join(data_dir, "facts", "pi", "pis.csv") if data_dir else "")
@@ -110,7 +125,7 @@ def cli(
     aps = inventory.populateaps(ctx.obj["apsfile"], ctx.obj["apusefile"])
     pis = inventory.populatepis(ctx.obj["pifile"], ctx.obj["piusefile"])
 
-    return {
+    ctx.obj["inventory_data"] = {
         "vlans": vlans,
         "switches": switches,
         "servers": servers,
@@ -118,12 +133,38 @@ def cli(
         "aps": aps,
         "pis": pis,
     }
+    return ctx.obj["inventory_data"]
 
 
 def ensure_output_dir(output_dir):
     """Ensure the output directory exists."""
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+
+
+def load_inventory_data(ctx):
+    """Load inventory data using paths initialized on the Click context."""
+    data = ctx.obj.get("inventory_data")
+    if data is not None:
+        return data
+
+    vlans = inventory.populate_vlans(ctx.obj["swconfigdir"], ctx.obj["vlansfile"])
+    switches = inventory.populateswitches(ctx.obj["switchesfile"])
+    servers = inventory.populateservers(ctx.obj["serversfile"], vlans)
+    routers = inventory.populaterouters(ctx.obj["routersfile"])
+    aps = inventory.populateaps(ctx.obj["apsfile"], ctx.obj["apusefile"])
+    pis = inventory.populatepis(ctx.obj["pifile"], ctx.obj["piusefile"])
+
+    data = {
+        "vlans": vlans,
+        "switches": switches,
+        "servers": servers,
+        "routers": routers,
+        "aps": aps,
+        "pis": pis,
+    }
+    ctx.obj["inventory_data"] = data
+    return data
 
 
 @cli.command()
@@ -133,9 +174,7 @@ def kea(ctx, output_dir):
     """Generate Kea DHCP server configuration."""
     ensure_output_dir(output_dir)
     data = load_inventory_data(ctx)
-    inventory.generatekeaconfig(
-        data["servers"], data["aps"], data["vlans"], output_dir
-    )
+    inventory.generatekeaconfig(data["servers"], data["aps"], data["vlans"], output_dir)
     click.echo(f"✓ Kea configuration written to {output_dir}")
 
 
@@ -164,9 +203,7 @@ def prom(ctx, output_dir):
     """Generate Prometheus monitoring configuration."""
     ensure_output_dir(output_dir)
     data = load_inventory_data(ctx)
-    inventory.generatepromconfigs(
-        data["switches"], data["pis"], data["aps"], output_dir
-    )
+    inventory.generatepromconfigs(data["switches"], data["pis"], data["aps"], output_dir)
     click.echo(f"✓ Prometheus configuration written to {output_dir}")
 
 
@@ -183,6 +220,7 @@ def wasgeht(ctx, output_dir):
         data["pis"],
         data["aps"],
         data["servers"],
+        data["vlans"],
         output_dir,
     )
     click.echo(f"✓ Wasgeht configuration written to {output_dir}")
@@ -209,9 +247,7 @@ def all(ctx, output_dir):
 
     click.echo("Generating all configurations...")
 
-    inventory.generatekeaconfig(
-        data["servers"], data["aps"], data["vlans"], output_dir
-    )
+    inventory.generatekeaconfig(data["servers"], data["aps"], data["vlans"], output_dir)
     click.echo("  ✓ Kea DHCP")
 
     inventory.generatezones(
@@ -224,9 +260,7 @@ def all(ctx, output_dir):
     )
     click.echo("  ✓ DNS zones")
 
-    inventory.generatepromconfigs(
-        data["switches"], data["pis"], data["aps"], output_dir
-    )
+    inventory.generatepromconfigs(data["switches"], data["pis"], data["aps"], output_dir)
     click.echo("  ✓ Prometheus")
 
     inventory.generatewasgehtconfig(
@@ -235,6 +269,7 @@ def all(ctx, output_dir):
         data["pis"],
         data["aps"],
         data["servers"],
+        data["vlans"],
         output_dir,
     )
     click.echo("  ✓ Wasgeht")
@@ -248,9 +283,7 @@ def all(ctx, output_dir):
 @cli.command()
 @click.argument(
     "variable",
-    type=click.Choice(
-        ["switches", "routers", "vlans", "servers", "aps", "pis"], case_sensitive=False
-    ),
+    type=click.Choice(["switches", "routers", "vlans", "servers", "aps", "pis"], case_sensitive=False),
 )
 @click.option(
     "--pretty/--no-pretty",

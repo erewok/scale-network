@@ -5,7 +5,6 @@ Tests for cross-file uniqueness validation.
 
 import pandas as pd
 
-import facts.datasource as ds
 from facts.uniqueness import UniquenessRegistry
 
 
@@ -222,7 +221,7 @@ def test_check_reference_empty_skipped():
 
 def test_switchtypes_uniqueness():
     """Ensure no duplicates within switchtypes.
-    
+
     Note: Skipping this test as switchtypes is from switch-configuration,
     not bundled in the package data yet.
     """

@@ -23,10 +23,11 @@ module-name = "facts"
 
 [dependency-groups]
 dev = [
-"ipdb",
-"pylint",
-"pytest",
-"ruff"
+    "coverage",
+    "ipdb",
+    "pytest",
+    "pytest-cov",
+    "ruff"
 ]
 
 
@@ -36,6 +37,11 @@ pythonpath = "."
 addopts = "--cov-report term:skip-covered --cov=facts --cov-report html"
 testpaths = ["tests"]
 
+[tool.coverage.run]
+omit = [
+    "src/facts/__main__.py",
+]
+
 [tool.ruff.lint]
 select = ["E", "F"]
 ignore = ["E712"]
@@ -44,8 +50,7 @@ unfixable = []
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.ruff.lint.per-file-ignores]
-"facts/src/facts/__main__.py" = ["F401"]
-
+"src/facts/__main__.py" = ["F401"]
 
 [tool.ruff]
 line-length = 120

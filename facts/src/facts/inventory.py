@@ -9,9 +9,9 @@ import copy
 import ipaddress
 import json
 import math
-import os
+# import os
 import re
-import sys
+# import sys
 
 import jinja2
 import pandas
@@ -425,7 +425,7 @@ def populatepis(pis_file, piuse_file):
     return pis
 
 
-def serveralias(name):
+def serveralias(name: str):
     """generate aliases for servers. Rendered as CNAMES"""
     payload = []
     match name.lower():
@@ -970,12 +970,22 @@ def _building_from_vlans(vlans, ipv6=None, ipv4=None):
     return ""
 
 
-def _prom_exclude(name):
+def _prom_exclude(name: str) -> bool:
     """Return True if the name should be excluded from prom configs."""
-    return re.match(
-        r"^(deceased|donotuse|expob5|expoc4|expoc5|massflash|pi-massflash|pi-reghelp1|pi-reghelp2|spare)",
-        name,
-    )
+    EXCLUDES = [
+        "deceased",
+        "donotuse",
+        "expob5",
+        "expoc4",
+        "expoc5",
+        "massflash",
+        "pi-massflash",
+        "pi-reghelp1",
+        "pi-reghelp2",
+        "spare",
+    ]
+    regex = r"^(" + "|".join(EXCLUDES) + ")"
+    return re.match(regex, name) is not None
 
 
 def generatepromconfigs(switches, pis, aps, outputdir):
@@ -1260,69 +1270,69 @@ def generateallnetwork(switches, routers, outputdir):
         with open(f"{outputdir}/all-network-devices", "a") as f:
             f.write(f"{h}\n")
 
+# Deprecated: comment for comparison/validation with new entrypoint
+# def main():
+#     """command entry point"""
 
-def main():
-    """command entry point"""
+#     # Repository data files
+#     swconfigdir = "../switch-configuration/config/"
+#     vlansfile = "vlans"
+#     switchesfile = "../switch-configuration/config/switchtypes"
+#     serversfile = "../facts/servers/serverlist.csv"
+#     routersfile = "../facts/routers/routerlist.csv"
+#     apsfile = "../facts/aps/aps.csv"
+#     apusefile = "../facts/aps/apuse.csv"
+#     pifile = "../facts/pi/pis.csv"
+#     piusefile = "../facts/pi/piuse.csv"
 
-    # Repository data files
-    swconfigdir = "../switch-configuration/config/"
-    vlansfile = "vlans"
-    switchesfile = "../switch-configuration/config/switchtypes"
-    serversfile = "../facts/servers/serverlist.csv"
-    routersfile = "../facts/routers/routerlist.csv"
-    apsfile = "../facts/aps/aps.csv"
-    apusefile = "../facts/aps/apuse.csv"
-    pifile = "../facts/pi/pis.csv"
-    piusefile = "../facts/pi/piuse.csv"
+#     # populate the device type lists
+#     vlans = populate_vlans(swconfigdir, vlansfile)
+#     switches = populateswitches(switchesfile)
+#     servers = populateservers(serversfile, vlans)
+#     routers = populaterouters(routersfile)
+#     aps = populateaps(apsfile, apusefile)
+#     pis = populatepis(pifile, piusefile)
 
-    # populate the device type lists
-    vlans = populate_vlans(swconfigdir, vlansfile)
-    switches = populateswitches(switchesfile)
-    servers = populateservers(serversfile, vlans)
-    routers = populaterouters(routersfile)
-    aps = populateaps(apsfile, apusefile)
-    pis = populatepis(pifile, piusefile)
+#     subcomm = sys.argv[1]
+#     outputdir = sys.argv[2]
+#     if not os.path.exists(outputdir):
+#         os.makedirs(outputdir)
 
-    subcomm = sys.argv[1]
-    outputdir = sys.argv[2]
-    if not os.path.exists(outputdir):
-        os.makedirs(outputdir)
-
-    if subcomm == "kea":
-        generatekeaconfig(servers, aps, vlans, outputdir)
-    elif subcomm == "nsd":
-        generatezones(switches, routers, pis, aps, servers, outputdir)
-    elif subcomm == "prom":
-        generatepromconfigs(switches, pis, aps, outputdir)
-    elif subcomm == "wasgeht":
-        generatewasgehtconfig(switches, routers, pis, aps, servers, vlans, outputdir)
-    elif subcomm == "allnet":
-        generateallnetwork(switches, routers, outputdir)
-    elif subcomm == "all":
-        generatekeaconfig(servers, aps, vlans, outputdir)
-        generatezones(switches, routers, pis, aps, servers, outputdir)
-        generatepromconfigs(switches, pis, aps, outputdir)
-        generatewasgehtconfig(switches, routers, pis, aps, servers, vlans, outputdir)
-        generateallnetwork(switches, routers, outputdir)
-    elif subcomm == "debug":
-        # overload outputdir as 2nd debug parameter
-        debug_variable = outputdir
-        # valid variables to inspect
-        valid_debug_variables = {
-            "switches": switches,
-            "routers": routers,
-            "vlans": vlans,
-            "servers": servers,
-            "aps": aps,
-            "pis": pis,
-        }
-        if debug_variable in valid_debug_variables.keys():
-            print(json.dumps(valid_debug_variables[debug_variable]))
-        else:
-            print(f"invalid debug variable {debug_variable}")
-    else:
-        print("invalid subcommand")
+#     if subcomm == "kea":
+#         generatekeaconfig(servers, aps, vlans, outputdir)
+#     elif subcomm == "nsd":
+#         generatezones(switches, routers, pis, aps, servers, outputdir)
+#     elif subcomm == "prom":
+#         generatepromconfigs(switches, pis, aps, outputdir)
+#     elif subcomm == "wasgeht":
+#         generatewasgehtconfig(switches, routers, pis, aps, servers, vlans, outputdir)
+#     elif subcomm == "allnet":
+#         generateallnetwork(switches, routers, outputdir)
+#     elif subcomm == "all":
+#         generatekeaconfig(servers, aps, vlans, outputdir)
+#         generatezones(switches, routers, pis, aps, servers, outputdir)
+#         generatepromconfigs(switches, pis, aps, outputdir)
+#         generatewasgehtconfig(switches, routers, pis, aps, servers, vlans, outputdir)
+#         generateallnetwork(switches, routers, outputdir)
+#     elif subcomm == "debug":
+#         # overload outputdir as 2nd debug parameter
+#         debug_variable = outputdir
+#         # valid variables to inspect
+#         valid_debug_variables = {
+#             "switches": switches,
+#             "routers": routers,
+#             "vlans": vlans,
+#             "servers": servers,
+#             "aps": aps,
+#             "pis": pis,
+#         }
+#         if debug_variable in valid_debug_variables.keys():
+#             print(json.dumps(valid_debug_variables[debug_variable]))
+#         else:
+#             print(f"invalid debug variable {debug_variable}")
+#     else:
+#         print("invalid subcommand")
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

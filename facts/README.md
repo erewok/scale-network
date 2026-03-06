@@ -106,4 +106,23 @@ Run linter:
 uv run ruff check .
 ```
 
+### Using just (optional)
+
+This project includes a `justfile` for convenient task automation. If you have [just](https://github.com/casey/just) installed, you can use these commands:
+
+```bash
+just                    # List all available commands
+just bootstrap          # Install dependencies with Python 3.13 (default)
+just bootstrap 3.12     # Install dependencies with a specific Python version
+just sync               # Sync dependencies with environment
+just lock               # Update the lock file
+just update             # Update all dependencies to latest allowed versions
+just check              # Run ruff linter
+just fmt                # Run ruff formatter
+just test               # Run all tests
+just test -v            # Run tests with additional arguments
+```
+
+If you don't have `just` installed, you can use the equivalent `uv` commands shown in the sections above.
+
 The entry point is defined in `src/facts/__main__.py` for clarity during development.
