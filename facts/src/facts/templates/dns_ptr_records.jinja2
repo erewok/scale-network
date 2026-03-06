@@ -1,0 +1,6 @@
+{%- for item in batch %}
+{%- set ptr = ip + 'ptr' %}
+{%- if item[ptr] %}
+{{ item[ptr] }}.  IN  PTR    {{ item['fqdn'] }}.
+{%- endif %}
+{%- endfor %}

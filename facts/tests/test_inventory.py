@@ -3,7 +3,7 @@
 Tests for inventory.py
 """
 
-import inventory
+import facts.inventory as inventory
 
 
 def test_dhcp6ranges():
@@ -231,12 +231,12 @@ def test_roomalias():
         assert inventory.roomalias(name) == aliases, name
 
 
-def test_populate_vlans():
+def test_populate_vlans(testdata_dir):
     # pylint: disable=line-too-long
     """test cases for the populate_vlans() function"""
     cases = [
         [
-            ["./testdata/", "testvlans"],
+            [testdata_dir / "testvlans"],
             [
                 {
                     "name": "exSCALE-SLOW",
@@ -346,11 +346,11 @@ def test_populate_vlans():
         assert inventory.populate_vlans(swconfigdir, vlansfile) == vlans, case
 
 
-def test_populateswitches():
+def test_populateswitches(testdata_dir):
     """test cases for the populateswitches() function"""
     cases = [
         [
-            "./testdata/testswitchtypes",
+            testdata_dir / "testswitchtypes",
             [
                 {
                     "name": "expo-catwalk",
@@ -383,11 +383,11 @@ def test_populateswitches():
         assert inventory.populateswitches(filename) == switches, filename
 
 
-def test_populaterouters():
+def test_populaterouters(testdata_dir):
     """test cases for the populaterouters() function"""
     cases = [
         [
-            "./testdata/testrouterlist.csv",
+            testdata_dir / "testrouterlist.csv",
             [
                 {
                     "name": "br-mdf-01",
@@ -403,12 +403,12 @@ def test_populaterouters():
         assert inventory.populaterouters(filename) == routers, filename
 
 
-def test_populateaps():
+def test_populateaps(testdata_dir):
     """test cases for the populateaps() function"""
     cases = [
         [
-            "./testdata/testaps.csv",
-            "./testdata/testapuse.csv",
+            testdata_dir / "testaps.csv",
+            testdata_dir / "testapuse.csv",
             [
                 {
                     "name": "101-a",
@@ -445,12 +445,12 @@ def test_populateaps():
         assert inventory.populateaps(aps, apuse) == apsmerged
 
 
-def test_populatepis():
+def test_populatepis(testdata_dir):
     """test cases for the populatepis() function"""
     cases = [
         [
-            "./testdata/testpis.csv",
-            "./testdata/testpiuse.csv",
+            testdata_dir / "testpis.csv",
+            testdata_dir / "testpiuse.csv",
             [
                 {
                     "name": "pi-expo6",
@@ -468,7 +468,7 @@ def test_populatepis():
         )
 
 
-def test_populateservers():
+def test_populateservers(testdata_dir):
     """test cases for the populateservers() function"""
     mocvlans = [
         {
@@ -482,7 +482,7 @@ def test_populateservers():
     ]
     cases = [
         [
-            "./testdata/testserverlist.csv",
+            testdata_dir / "testserverlist.csv",
             [
                 {
                     "aliases": [],

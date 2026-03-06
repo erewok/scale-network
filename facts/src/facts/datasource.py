@@ -11,10 +11,11 @@ Handles:
 
 import ipaddress
 import re
-from os import listdir
-from os.path import isfile, join
+from pathlib import Path
 
 import pandas as pd
+
+from . import resources
 
 
 # =============================================================================
@@ -163,16 +164,34 @@ def is_valid_switch_hierarchy(val: str) -> bool:
     return bool(re.match(r"^[A-Z]+\.[0-9]$", val))
 
 
+def _first_existing_dir(candidates: list[Path]) -> Path | None:
+    """Return first directory that exists from a list of candidates."""
+    for candidate in candidates:
+        if candidate.is_dir():
+            return candidate
+    return None
+
+
 def is_in_ap_list(val: str) -> bool:
     """Test for existence of serial number in aps.csv."""
-    df = pd.read_csv("aps/aps.csv")
+    ap_list_file = resources.get_data_file("aps/aps.csv")
+    df = pd.read_csv(ap_list_file)
     return val in df["serial"].values
 
 
 def is_valid_switch_type(val: str) -> bool:
-    """test for valid switch type, denoted by existence of file in types dir"""
-    type_path = "../switch-configuration/config/types/"
-    valid = [f for f in listdir(type_path) if isfile(join(type_path, f))]
+    """Test for valid switch type, denoted by existence of file in types dir."""
+    packaged_types_dir = resources.get_data_dir("switch-config") / "types"
+    fallback_dirs = [
+        Path("../switch-configuration/config/types"),
+        Path("switch-configuration/config/types"),
+    ]
+
+    type_dir = _first_existing_dir([packaged_types_dir] + fallback_dirs)
+    if type_dir is None:
+        return False
+
+    valid = [entry.name for entry in type_dir.iterdir() if entry.is_file()]
     return val in valid
 
 

@@ -1,0 +1,76 @@
+[project]
+name = "facts"
+version = "0.1.0"
+description = "Manage scale-network inventory at Scale"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "click",
+    "jinja2",
+    "pandas",
+    "importlib-resources>=5.0; python_version < '3.13'",
+]
+
+[project.scripts]
+facts = "facts.__main__:main"
+
+[build-system]
+requires = ["uv_build>=0.9.25,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "facts"
+
+[dependency-groups]
+dev = [
+"ipdb",
+"pylint",
+"pytest",
+"ruff"
+]
+
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+pythonpath = "."
+addopts = "--cov-report term:skip-covered --cov=facts --cov-report html"
+testpaths = ["tests"]
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = ["E712"]
+fixable = ["A", "B", "C", "D", "E", "F"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+"facts/src/facts/__main__.py" = ["F401"]
+
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+

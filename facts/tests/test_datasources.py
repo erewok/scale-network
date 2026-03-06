@@ -4,13 +4,13 @@ CSV data source tests
 """
 
 import os
-import datasource as ds
+import facts.datasource as ds
 
 
-def test_apuse_csv():
+def test_apuse_csv(pkg_path):
     """test apuse.csv"""
     meta = {
-        "file": "./aps/apuse.csv",
+        "file": pkg_path("aps/apuse.csv"),
         "header": True,
         "count": 9,
         "cols": [
@@ -29,10 +29,10 @@ def test_apuse_csv():
     assert result, err
 
 
-def test_aps_csv():
+def test_aps_csv(pkg_path):
     """test aps.csv"""
     meta = {
-        "file": "./aps/aps.csv",
+        "file": pkg_path("aps/aps.csv"),
         "header": True,
         "count": 2,
         "cols": [
@@ -44,10 +44,10 @@ def test_aps_csv():
     assert result, err
 
 
-def test_pis_csv():
+def test_pis_csv(pkg_path):
     """test pis.csv"""
     meta = {
-        "file": "./pi/pis.csv",
+        "file": pkg_path("pi/pis.csv"),
         "header": True,
         "count": 3,
         "cols": [
@@ -60,10 +60,10 @@ def test_pis_csv():
     assert result, err
 
 
-def test_piuse_csv():
+def test_piuse_csv(pkg_path):
     """test piuse.csv"""
     meta = {
-        "file": "./pi/piuse.csv",
+        "file": pkg_path("pi/piuse.csv"),
         "header": True,
         "count": 3,
         "cols": [
@@ -76,10 +76,10 @@ def test_piuse_csv():
     assert result, err
 
 
-def test_routerlist_csv():
+def test_routerlist_csv(pkg_path):
     """test routerlist.csv"""
     meta = {
-        "file": "./routers/routerlist.csv",
+        "file": pkg_path("routers/routerlist.csv"),
         "header": True,
         "count": 2,
         "cols": [
@@ -91,10 +91,10 @@ def test_routerlist_csv():
     assert result, err
 
 
-def test_serverlist_csv():
+def test_serverlist_csv(pkg_path):
     """test serverlist.csv"""
     meta = {
-        "file": "./servers/serverlist.csv",
+        "file": pkg_path("servers/serverlist.csv"),
         "header": True,
         "count": 5,
         "cols": [
@@ -109,10 +109,10 @@ def test_serverlist_csv():
     assert result, err
 
 
-def test_switchtypes_tsv():
+def test_switchtypes_tsv(pkg_path):
     """test switchtypes"""
     meta = {
-        "file": "../switch-configuration/config/switchtypes",
+        "file": pkg_path("switch-config/switchtypes"),
         "header": False,
         "count": "9+",
         "cols": [
@@ -131,13 +131,18 @@ def test_switchtypes_tsv():
     assert result, err
 
 
-def test_vlansd_tsv():
+def test_vlansd_tsv(pkg_path):
     """test vlans.d/"""
 
-    vlansddir = "../switch-configuration/config/vlans.d/"
+    packaged_vlansd = pkg_path("switch-config/vlans.d")
+    if os.path.isdir(packaged_vlansd):
+        vlansddir = str(packaged_vlansd)
+    else:
+        vlansddir = "../switch-configuration/config/vlans.d"
+
     for filename in os.listdir(vlansddir):
         meta = {
-            "file": vlansddir + filename,
+            "file": os.path.join(vlansddir, filename),
             "header": False,
             "count": "6+",
             "cols": [

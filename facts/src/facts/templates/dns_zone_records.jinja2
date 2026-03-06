@@ -1,0 +1,14 @@
+{%- for item in batch %}
+{%- if item['ipv6'] %}
+{{ item['name'] }}  IN  AAAA    {{ item['ipv6'] }}
+{%- endif %}
+{%- if item['ipv4'] %}
+{{ item['name'] }}  IN  A    {{ item['ipv4'] }}
+{%- endif %}
+{%- if item['num'] %}
+switch{{ item['num'] }}  IN  CNAME   {{item['fqdn'] }}.
+{%- endif %}
+{%- for alias in item['aliases'] %}
+{{ alias }} IN    CNAME   {{ item['fqdn'] }}.
+{%- endfor %}
+{%- endfor %}
