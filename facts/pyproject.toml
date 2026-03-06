@@ -37,6 +37,10 @@ pythonpath = "."
 addopts = "--cov-report term:skip-covered --cov=facts --cov-report html"
 testpaths = ["tests"]
 
+[tool.coverage.report]
+# Fail if the overall total coverage is under 75%
+fail_under = 95
+
 [tool.coverage.run]
 omit = [
     "src/facts/__main__.py",
